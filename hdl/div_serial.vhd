@@ -23,14 +23,13 @@ entity div_serial is
 end entity div_serial;
 
 architecture behav of div_serial is
-    signal start_mul: boolean;
     signal m_done : boolean;
     signal m_start : boolean;
     signal m_abort: boolean;
 
     signal m_r, next_m_r: std_logic_vector(31 downto 0);
     signal m_r_shifted: std_logic_vector(32 downto 0);
-    signal m_q, next_m_q: std_logic_vector(b'range);
+    signal m_q, next_m_q: std_logic_vector(32 downto 0);
     signal m_cycle, next_m_cycle: natural range 0 to 33;
 
     signal q, next_q: std_logic;
@@ -72,8 +71,8 @@ begin
     mul_calc_p: process(all) is
     begin
         next_m_cycle    <= m_cycle;
-        next_m_r        <= (others => 'X');
-        next_m_q        <= (others => 'X');
+        next_m_r        <= m_r;
+        next_m_q        <= m_q;
         next_q          <= invcarry;
 
         if m_cycle = 33 and not m_start then
@@ -83,22 +82,24 @@ begin
         if m_start and m_cycle = 0 then
             next_m_cycle        <= 1;
             next_m_r            <= (others => '0');
-            next_m_q            <= a(30 downto 0) & '0';
+            next_m_q            <= a(31 downto 0) & '0';
             next_q              <= '1';
         else
             if m_cycle /= 0 and m_cycle /= 32 and m_cycle /= 33 then
-                next_m_q        <= m_q(30 downto 0) & invcarry;
+                next_m_q        <= m_q(31 downto 0) & invcarry;
                 next_m_r        <= alur(31 downto 0);
                 next_m_cycle    <= m_cycle + 1;
             elsif m_cycle = 32 then
-                next_m_r        <= alur(31 downto 0);
+                if q = '0' then
+                    next_m_r        <= alur(31 downto 0);
+                end if;
                 next_m_q        <= m_q;
                 next_m_cycle    <= m_cycle + 1;
             end if; 
         end if;
     end process mul_calc_p;
 
-    quot <= m_q;
+    quot <= m_q(31 downto 0);
     remain <= m_r;
 end architecture behav;
 
