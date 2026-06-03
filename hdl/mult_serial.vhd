@@ -60,8 +60,8 @@ begin
     begin
         next_m_cycle    <= m_cycle;
         next_m_accu     <= m_accu;
-        next_m_a        <= (others => 'X');
-        next_m_b        <= (others => 'X');
+        next_m_a        <= m_a;
+        next_m_b        <= m_b;
 
         if m_cycle = 33 and not m_start then
             next_m_cycle <= 0;
