@@ -77,7 +77,7 @@ begin
             if m_cycle /= 0 and m_cycle /= 33 then
                 next_m_a        <= m_a(m_a'left - 1 downto 0) & '0';
                 next_m_accu     <= std_logic_vector(unsigned(m_accu) + unsigned(m_a)) when m_b(0) = '1' else
-                                   next_m_accu;
+                                   m_accu;
                 next_m_b        <= '0' & m_b(m_b'left downto 1);
 
                 if m_cycle = 32 or m_abort then
