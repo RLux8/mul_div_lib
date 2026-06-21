@@ -30,7 +30,7 @@ architecture behav of mult_serial is
 
     signal m_a, next_m_a: std_logic_vector(result'range);
     signal m_b, next_m_b: std_logic_vector(b'range);
-    signal m_cycle, next_m_cycle: natural range 0 to 33;
+    signal m_cycle, next_m_cycle: natural range 0 to WIDTHS+1;
 begin
     m_start <= calc;
 
@@ -41,7 +41,7 @@ begin
             m_a <= (others => '0');
             m_b <= (others => '0');
             m_accu <= (others => '0');
-            m_cycle <= 33;
+            m_cycle <= 0;
         else
             if (clk'event and clk = '1') then  
                 m_a         <= next_m_a;
@@ -55,7 +55,7 @@ begin
 
     m_done <= m_cycle = 0;
     m_abort <= m_b = x"00000000";
-    busy   <= (m_cycle /= 0 and m_cycle /= 33) or (m_cycle = 0 and m_start);
+    busy   <= (m_cycle /= 0 and m_cycle /= WIDTHS+1) or (m_cycle = 0 and m_start);
     mul_calc_p: process(all) is
     begin
         next_m_cycle    <= m_cycle;
@@ -63,7 +63,7 @@ begin
         next_m_a        <= m_a;
         next_m_b        <= m_b;
 
-        if m_cycle = 33 and not m_start then
+        if m_cycle = WIDTHS+1 and not m_start then
             next_m_cycle <= 0;
         end if;
 
@@ -74,14 +74,14 @@ begin
             next_m_a(a'range)   <= a;
             next_m_accu         <= (others => '0');
         else
-            if m_cycle /= 0 and m_cycle /= 33 then
+            if m_cycle /= 0 and m_cycle /= WIDTHS+1 then
                 next_m_a        <= m_a(m_a'left - 1 downto 0) & '0';
                 next_m_accu     <= std_logic_vector(unsigned(m_accu) + unsigned(m_a)) when m_b(0) = '1' else
                                    m_accu;
                 next_m_b        <= '0' & m_b(m_b'left downto 1);
 
-                if m_cycle = 32 or m_abort then
-                    next_m_cycle <= 33;
+                if m_cycle = WIDTHS or m_abort then
+                    next_m_cycle <= WIDTHS+1;
                 else
                     next_m_cycle    <= m_cycle + 1;
                 end if;
