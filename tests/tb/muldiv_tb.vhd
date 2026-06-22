@@ -134,8 +134,10 @@ begin
     either_busy <= div_busy or mul_busy;
 
     exp_mul_res         <= std_logic_vector(unsigned(tv_a) * unsigned(tv_b));
-    exp_div_q           <= std_logic_vector(unsigned(tv_a) / unsigned(tv_b));
-    exp_div_remain      <= std_logic_vector(unsigned(tv_a) rem unsigned(tv_b));
+    exp_div_q           <= std_logic_vector(unsigned(tv_a) / unsigned(tv_b))   when to_integer(unsigned(tv_b)) /= 0 else
+                           (others => 'Z');
+    exp_div_remain      <= std_logic_vector(unsigned(tv_a) rem unsigned(tv_b)) when to_integer(unsigned(tv_b)) /= 0 else
+                           (others => 'Z');
 
     testvec_p: process
         variable seed1 : positive;
@@ -157,8 +159,11 @@ begin
             wait until either_busy = false;
             calc_start <= false;
             wait until falling_edge(clk);
-            assert unsigned(mul_res) = unsigned(tv_a) * unsigned(tv_b) report "damn" severity warning;
-            assert unsigned(div_q)   = unsigned(tv_a) / unsigned(tv_b) report "damn" severity warning;
+            assert mul_res = exp_mul_res report "damn" severity failure;
+            if to_integer(unsigned(tv_b)) /= 0 then
+                assert div_q = exp_div_q report "damn" severity failure;
+                assert div_remain = exp_div_remain report "damn" severity failure;
+            end if;
             wait until rising_edge(clk);
         end loop;
     end process testvec_p;

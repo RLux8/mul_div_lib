@@ -30,7 +30,7 @@ architecture behav of div_serial is
     signal m_r, next_m_r: std_logic_vector(WIDTHS-1 downto 0);
     signal m_r_shifted: std_logic_vector(WIDTHS downto 0);
     signal m_q, next_m_q: std_logic_vector(WIDTHS downto 0);
-    signal m_cycle, next_m_cycle: natural range 0 to WIDTHS+1;
+    signal m_cycle, next_m_cycle: natural range 0 to WIDTHS+2;
 
     signal q, next_q: std_logic;
     signal alur: std_logic_vector(WIDTHS downto 0);
@@ -56,7 +56,7 @@ begin
     end process mul_state_p;
 
 
-    alur   <= std_logic_vector(unsigned('0' & m_r)   + unsigned(b)) when q = '0' and m_cycle = WIDTHS else
+    alur   <= std_logic_vector(unsigned('0' & m_r)   + unsigned(b)) when q = '0' and m_cycle = WIDTHS + 1 else
               std_logic_vector(unsigned(m_r_shifted) + unsigned(b)) when q = '0' else
               std_logic_vector(unsigned(m_r_shifted) - unsigned(b));
 
@@ -67,7 +67,7 @@ begin
 
     m_done <= m_cycle = 0;
     m_abort <= false;
-    busy   <= (m_cycle /= 0 and m_cycle /= WIDTHS+1) or (m_cycle = 0 and m_start);
+    busy   <= (m_cycle /= 0 and m_cycle /= WIDTHS+2) or (m_cycle = 0 and m_start);
     mul_calc_p: process(all) is
     begin
         next_m_cycle    <= m_cycle;
@@ -75,7 +75,7 @@ begin
         next_m_q        <= m_q;
         next_q          <= invcarry;
 
-        if m_cycle = WIDTHS+1 and not m_start then
+        if m_cycle = WIDTHS+2 and not m_start then
             next_m_cycle <= 0;
         end if;
 
@@ -85,13 +85,13 @@ begin
             next_m_q            <= a(WIDTHS-1 downto 0) & '0';
             next_q              <= '1';
         else
-            if m_cycle /= 0 and m_cycle /= WIDTHS and m_cycle /= WIDTHS+1 then
+            if m_cycle /= 0 and m_cycle /= WIDTHS + 1 and m_cycle /= WIDTHS+2 then
                 next_m_q        <= m_q(WIDTHS-1 downto 0) & invcarry;
                 next_m_r        <= alur(WIDTHS-1 downto 0);
                 next_m_cycle    <= m_cycle + 1;
-            elsif m_cycle = WIDTHS then
+            elsif m_cycle = WIDTHS + 1 then
                 if q = '0' then
-                    next_m_r        <= alur(WIDTHS-1 downto 0);
+                next_m_r        <= alur(WIDTHS-1 downto 0);
                 end if;
                 next_m_q        <= m_q;
                 next_m_cycle    <= m_cycle + 1;
