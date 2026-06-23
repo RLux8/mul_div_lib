@@ -33,7 +33,7 @@ runwave:
 	@$(GHDL_CMD) -r $(GHDL_FLAGS) $(GHDL_COMPILE_FLAGS) -Pwork --work=md_test_lib md_test_lib.muldiv_tb --wave=$(WORKDIR)/tb.ghw $(GHDL_SIM_OPT) --stop-time=${DURATION_LIMIT}
 
 view:
-	@$(WAVEFORM_VIEWER) -s riscvio.surf.ron $(WORKDIR)/tb.ghw
+	@$(WAVEFORM_VIEWER) -s tb.surf.ron $(WORKDIR)/tb.ghw
 
 clean:
 	@rm -rf $(WORKDIR)
